@@ -379,3 +379,9 @@ EMPTY STAR
 </svg>
 
 */
+.list::-webkit-scrollbar {
+  display: none;
+}
+.box::-webkit-scrollbar {
+  display: none;
+}
