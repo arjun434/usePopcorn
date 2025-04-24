@@ -1,4 +1,4 @@
-import { use, useState } from "react";
+import { useRef, useState } from "react";
 import { useEffect } from "react";
 import StarRating from "./StarRating";
 const tempMovieData = [
@@ -63,7 +63,7 @@ export default function App() {
   const [watched, setWatched] = useState(function () {
     const storedValue = localStorage.getItem("watched");
     return JSON.parse(storedValue);
-  });
+  }); //lazy initialization of state
   // useEffect(function () {
   //   console.log("A");
   // }, []);
@@ -189,6 +189,24 @@ function Logo() {
   );
 }
 function Search({ query, setQuery }) {
+  const inputEl = useRef(null);
+
+  useEffect(() => {
+    function callback(e) {
+      if (document.activeElement === inputEl.current) return;
+
+      if (e.code === "Enter") {
+        inputEl.current.focus();
+        setQuery("");
+      }
+    }
+
+    document.addEventListener("keydown", callback);
+    return () => {
+      document.removeEventListener("keydown", callback);
+    };
+  }, [setQuery]);
+
   return (
     <input
       className="search"
@@ -196,6 +214,7 @@ function Search({ query, setQuery }) {
       placeholder="Search movies..."
       value={query}
       onChange={(e) => setQuery(e.target.value)}
+      ref={inputEl}
     />
   );
 }
@@ -294,6 +313,8 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
   const [isLoading, setIsLoading] = useState(true);
   const [userRating, setUserRating] = useState(0);
 
+  const countRef = useRef(0);
+
   const isWatched = watched.map((movie) => movie.imdbID).includes(selectedId);
   const watchedUserRating = watched.find(
     (movie) => movie.imdbID === selectedId
@@ -319,7 +340,6 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
       poster,
       imdbRating: Number(imdbRating),
       runtime: Number(runtime.split(" ").at(0)),
-      userRating,
     };
 
     if (isWatched) {
@@ -329,6 +349,10 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
     onAddWatched(newWatchedMovie);
     onCloseMovie();
   }
+
+  useEffect(() => {
+    if (userRating) countRef.current += 1;
+  }, [userRating]);
   useEffect(
     function () {
       function callback(e) {
