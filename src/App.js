@@ -3,6 +3,8 @@ import { useEffect } from "react";
 import StarRating from "./StarRating";
 import { useMovies } from "./useMovies";
 import { useLocalStorageState } from "./useLocalStorageState";
+import { useKey } from "./useKey";
+
 const tempMovieData = [
   {
     imdbID: "tt1375666",
@@ -92,7 +94,9 @@ export default function App() {
   //   [watched]
   // );
   const { movies, isLoading, error } = useMovies(query, handleCloseMovie);
-  const { watched, setWatched } = useLocalStorageState();
+
+  const [watched, setWatched] = useLocalStorageState(tempMovieData, "watched");
+  // console.log("Getting after useLocalStorageState", watched);
   return (
     <>
       <Navbar>
@@ -154,21 +158,31 @@ function Logo() {
 function Search({ query, setQuery }) {
   const inputEl = useRef(null);
 
-  useEffect(() => {
-    function callback(e) {
+  useKey(
+    "Enter",
+    function () {
+      // This whole function is the actionCallback function in useKey
       if (document.activeElement === inputEl.current) return;
+      inputEl.current.focus();
+      setQuery("");
+    },
+    []
+  );
+  // useEffect(() => {
+  //   function callback(e) {
+  //     if (document.activeElement === inputEl.current) return;
 
-      if (e.code === "Enter") {
-        inputEl.current.focus();
-        setQuery("");
-      }
-    }
+  //     if (e.code === "Enter") {
+  //       inputEl.current.focus();
+  //       setQuery("");
+  //     }
+  //   }
 
-    document.addEventListener("keydown", callback);
-    return () => {
-      document.removeEventListener("keydown", callback);
-    };
-  }, [setQuery]);
+  //   document.addEventListener("keydown", callback);
+  //   return () => {
+  //     document.removeEventListener("keydown", callback);
+  //   };
+  // }, [setQuery]);
 
   return (
     <input
@@ -316,20 +330,9 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
   useEffect(() => {
     if (userRating) countRef.current += 1;
   }, [userRating]);
-  useEffect(
-    function () {
-      function callback(e) {
-        if (e.code === "Escape") {
-          onCloseMovie();
-        }
-      }
-      document.addEventListener("keydown", callback);
-      return function () {
-        document.removeEventListener("keydown", callback);
-      };
-    },
-    [onCloseMovie]
-  );
+
+  useKey("Escape", onCloseMovie);
+
   useEffect(
     function () {
       async function getMovieDetails() {
@@ -420,6 +423,7 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
   );
 }
 function WatchedSummary({ watched }) {
+  console.log("inside watched summary", watched);
   const avgImdbRating = average(watched.map((movie) => movie.imdbRating));
   const avgUserRating = average(watched.map((movie) => movie.userRating));
   const avgRuntime = average(watched.map((movie) => movie.runtime));
