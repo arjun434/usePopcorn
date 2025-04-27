@@ -95,7 +95,7 @@ export default function App() {
   // );
   const { movies, isLoading, error } = useMovies(query, handleCloseMovie);
 
-  const [watched, setWatched] = useLocalStorageState(tempMovieData, "watched");
+  const [watched, setWatched] = useLocalStorageState([], "watched");
   // console.log("Getting after useLocalStorageState", watched);
   return (
     <>
@@ -258,6 +258,7 @@ function WatchedMovieList({ watched, onDeleteWatchedMovie }) {
   );
 }
 function WatchedMovie({ movie, onDeleteWatchedMovie }) {
+  console.log(movie);
   return (
     <li key={movie.imdbID}>
       <img src={movie.poster} alt={`${movie.Title} poster`} />
@@ -317,6 +318,7 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
       poster,
       imdbRating: Number(imdbRating),
       runtime: Number(runtime.split(" ").at(0)),
+      userRating: Number(userRating),
     };
 
     if (isWatched) {
@@ -426,6 +428,7 @@ function WatchedSummary({ watched }) {
   console.log("inside watched summary", watched);
   const avgImdbRating = average(watched.map((movie) => movie.imdbRating));
   const avgUserRating = average(watched.map((movie) => movie.userRating));
+  console.log(avgUserRating);
   const avgRuntime = average(watched.map((movie) => movie.runtime));
   // console.log(watched);
   return (
